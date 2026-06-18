@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from backend.app.config import settings
 from backend.app.database import get_db
-from backend.app.routers import products, customers
+from backend.app.routers import products, customers, orders
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -14,6 +14,7 @@ app = FastAPI(
 
 app.include_router(products.router)
 app.include_router(customers.router)
+app.include_router(orders.router)
 
 # CORS middleware configuration to allow seamless integration with frontend
 app.add_middleware(
