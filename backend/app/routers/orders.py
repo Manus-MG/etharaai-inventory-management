@@ -134,3 +134,50 @@ async def get_order(order_id: int, db: AsyncSession = Depends(get_db)):
             detail=f"Order with ID {order_id} not found."
         )
     return order
+
+@router.delete("/{order_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_order(order_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Cancels/Deletes an order. Restores product inventory stocks atomically.
+    """
+    try:
+        # 1. Fetch Order with write lock and eager load items
+        result = await db.execute(
+            select(Order)
+            .where(Order.id == order_id)
+            .options(selectinload(Order.items))
+            .with_for_update()
+        )
+        order = result.scalar_one_or_none()
+        if not order:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Order with ID {order_id} not found."
+            )
+            
+        # 2. Iterate through items and restore product quantities
+        for item in order.items:
+            product_query = await db.execute(
+                select(Product)
+                .where(Product.id == item.product_id)
+                .with_for_update()
+            )
+            product = product_query.scalar_one_or_none()
+            if product:
+                # Add ordered quantity back to stock
+                product.quantity_in_stock += item.quantity
+                
+        # 3. Delete order (OrderItem cascade delete is automatic)
+        await db.delete(order)
+        await db.commit()
+        
+    except HTTPException:
+        await db.rollback()
+        raise
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected error occurred while cancelling the order: {str(e)}"
+        )
+    return None
