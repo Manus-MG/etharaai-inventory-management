@@ -38,3 +38,18 @@ test.db
 
 # OS-specific files
 .DS_Store
+
+# GSD and configuration files
+.agent/
+.agents/
+.gemini/
+.gsd/
+adapters/
+docs/
+scripts/
+PROJECT_RULES.md
+GSD-STYLE.md
+model_capabilities.yaml
+backendplan.md
+frontendplan.md
+
