@@ -1,6 +1,6 @@
 from decimal import Decimal
 from typing import Optional
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
 
 # ==========================================
 # Product Schemas
@@ -26,3 +26,27 @@ class ProductResponse(ProductBase):
     
     # Pydantic v2 ORM configuration
     model_config = ConfigDict(from_attributes=True)
+
+
+# ==========================================
+# Customer Schemas
+# ==========================================
+
+class CustomerBase(BaseModel):
+    full_name: str = Field(..., min_length=1, max_length=255, description="Full name of the customer")
+    email: EmailStr = Field(..., description="Valid email address of the customer")
+    phone_number: str = Field(..., min_length=1, max_length=100, description="Phone number")
+
+class CustomerCreate(CustomerBase):
+    pass
+
+class CustomerUpdate(BaseModel):
+    full_name: Optional[str] = Field(None, min_length=1, max_length=255)
+    email: Optional[EmailStr] = Field(None)
+    phone_number: Optional[str] = Field(None, min_length=1, max_length=100)
+
+class CustomerResponse(CustomerBase):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
