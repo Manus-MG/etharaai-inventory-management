@@ -1,0 +1,29 @@
+# Ignore virtual environments
+venv/
+.venv/
+env/
+
+# Ignore Python compiler caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore git metadata
+.git/
+.gitignore
+
+# Ignore local configuration files and databases
+.env
+*.db
+*.sqlite
+
+# Ignore Docker configurations in the runner
+.dockerignore
+docker-compose.yml
+
+# Ignore tests and test caches
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
