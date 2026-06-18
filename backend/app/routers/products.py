@@ -4,13 +4,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import IntegrityError
 from backend.app.database import get_db
-from backend.app.models import Product
+from backend.app.models import Product, User
 from backend.app.schemas import ProductCreate, ProductUpdate, ProductResponse
+from backend.app.auth import get_current_active_admin
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
 @router.post("", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
-async def create_product(product_in: ProductCreate, db: AsyncSession = Depends(get_db)):
+async def create_product(
+    product_in: ProductCreate,
+    db: AsyncSession = Depends(get_db),
+    current_admin: User = Depends(get_current_active_admin)
+):
     """
     Creates a new product. Validates SKU uniqueness.
     """
@@ -64,7 +69,12 @@ async def get_product(product_id: int, db: AsyncSession = Depends(get_db)):
     return product
 
 @router.put("/{product_id}", response_model=ProductResponse)
-async def update_product(product_id: int, product_in: ProductUpdate, db: AsyncSession = Depends(get_db)):
+async def update_product(
+    product_id: int,
+    product_in: ProductUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_admin: User = Depends(get_current_active_admin)
+):
     """
     Updates details of an existing product.
     """
@@ -102,7 +112,11 @@ async def update_product(product_id: int, product_in: ProductUpdate, db: AsyncSe
     return product
 
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_product(product_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_product(
+    product_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_admin: User = Depends(get_current_active_admin)
+):
     """
     Deletes a product by ID. Blocks deletion if references exist in active orders.
     """

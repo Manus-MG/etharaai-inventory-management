@@ -7,24 +7,36 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError
 from backend.app.database import get_db
-from backend.app.models import Order, OrderItem, Product, Customer
+from backend.app.models import Order, OrderItem, Product, Customer, User
 from backend.app.schemas import OrderCreate, OrderResponse
+from backend.app.auth import get_current_user
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
 @router.post("", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
-async def create_order(order_in: OrderCreate, db: AsyncSession = Depends(get_db)):
+async def create_order(
+    order_in: OrderCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     """
     Creates a new order. Validates customer and stock levels atomically,
     deducts product inventory levels, and calculates pricing totals.
     """
-    # 1. Verify that the Customer exists
-    customer_query = await db.execute(select(Customer).where(Customer.id == order_in.customer_id))
+    # Verify that user role is customer
+    if current_user.role != "customer":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only customers can place orders."
+        )
+
+    # 1. Verify that the Customer exists and belongs to current user
+    customer_query = await db.execute(select(Customer).where(Customer.user_id == current_user.id))
     customer = customer_query.scalar_one_or_none()
     if not customer:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Customer with ID {order_in.customer_id} does not exist."
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Customer profile not found for the authenticated user."
         )
 
     # 2. Group order items by product_id to validate aggregate stock requirements
@@ -77,7 +89,7 @@ async def create_order(order_in: OrderCreate, db: AsyncSession = Depends(get_db)
 
         # 4. Construct Order record
         db_order = Order(
-            customer_id=order_in.customer_id,
+            customer_id=customer.id,
             total_amount=total_amount,
             items=db_order_items
         )
@@ -105,20 +117,42 @@ async def create_order(order_in: OrderCreate, db: AsyncSession = Depends(get_db)
         )
 
 @router.get("", response_model=List[OrderResponse])
-async def list_orders(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
+async def list_orders(
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     """
-    Retrieves a list of all orders.
+    Retrieves a list of all orders. Customers can only view their own orders.
     """
-    result = await db.execute(
-        select(Order)
-        .options(selectinload(Order.items))
-        .offset(skip)
-        .limit(limit)
-    )
+    if current_user.role == "customer":
+        customer_query = await db.execute(select(Customer).where(Customer.user_id == current_user.id))
+        customer = customer_query.scalar_one_or_none()
+        if not customer:
+            return []
+        result = await db.execute(
+            select(Order)
+            .where(Order.customer_id == customer.id)
+            .options(selectinload(Order.items))
+            .offset(skip)
+            .limit(limit)
+        )
+    else:
+        result = await db.execute(
+            select(Order)
+            .options(selectinload(Order.items))
+            .offset(skip)
+            .limit(limit)
+        )
     return result.scalars().all()
 
 @router.get("/{order_id}", response_model=OrderResponse)
-async def get_order(order_id: int, db: AsyncSession = Depends(get_db)):
+async def get_order(
+    order_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     """
     Retrieves details of a specific order by ID.
     """
@@ -133,10 +167,23 @@ async def get_order(order_id: int, db: AsyncSession = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Order with ID {order_id} not found."
         )
+        
+    if current_user.role == "customer":
+        customer_query = await db.execute(select(Customer).where(Customer.user_id == current_user.id))
+        customer = customer_query.scalar_one_or_none()
+        if not customer or order.customer_id != customer.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this order."
+            )
     return order
 
 @router.delete("/{order_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_order(order_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_order(
+    order_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     """
     Cancels/Deletes an order. Restores product inventory stocks atomically.
     """
@@ -154,6 +201,15 @@ async def delete_order(order_id: int, db: AsyncSession = Depends(get_db)):
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Order with ID {order_id} not found."
             )
+            
+        if current_user.role == "customer":
+            customer_query = await db.execute(select(Customer).where(Customer.user_id == current_user.id))
+            customer = customer_query.scalar_one_or_none()
+            if not customer or order.customer_id != customer.id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You do not have permission to cancel this order."
+                )
             
         # 2. Iterate through items and restore product quantities
         for item in order.items:

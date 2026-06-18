@@ -4,13 +4,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import IntegrityError
 from backend.app.database import get_db
-from backend.app.models import Customer
+from backend.app.models import Customer, User
 from backend.app.schemas import CustomerCreate, CustomerResponse
+from backend.app.auth import get_current_active_admin
 
 router = APIRouter(prefix="/customers", tags=["Customers"])
 
 @router.post("", response_model=CustomerResponse, status_code=status.HTTP_201_CREATED)
-async def create_customer(customer_in: CustomerCreate, db: AsyncSession = Depends(get_db)):
+async def create_customer(
+    customer_in: CustomerCreate,
+    db: AsyncSession = Depends(get_db),
+    current_admin: User = Depends(get_current_active_admin)
+):
     """
     Creates a new customer. Validates email uniqueness.
     """
@@ -41,7 +46,12 @@ async def create_customer(customer_in: CustomerCreate, db: AsyncSession = Depend
     return db_customer
 
 @router.get("", response_model=List[CustomerResponse])
-async def list_customers(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
+async def list_customers(
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(get_db),
+    current_admin: User = Depends(get_current_active_admin)
+):
     """
     Retrieves a list of all customers.
     """
@@ -49,7 +59,11 @@ async def list_customers(skip: int = 0, limit: int = 100, db: AsyncSession = Dep
     return result.scalars().all()
 
 @router.get("/{customer_id}", response_model=CustomerResponse)
-async def get_customer(customer_id: int, db: AsyncSession = Depends(get_db)):
+async def get_customer(
+    customer_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_admin: User = Depends(get_current_active_admin)
+):
     """
     Retrieves details of a specific customer by ID.
     """
@@ -63,7 +77,11 @@ async def get_customer(customer_id: int, db: AsyncSession = Depends(get_db)):
     return customer
 
 @router.delete("/{customer_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_customer(customer_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_customer(
+    customer_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_admin: User = Depends(get_current_active_admin)
+):
     """
     Deletes a customer by ID. Blocks deletion if customer is referenced by existing orders.
     """
