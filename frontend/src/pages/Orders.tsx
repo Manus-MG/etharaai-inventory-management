@@ -100,10 +100,10 @@ export const Orders: React.FC = () => {
       {/* Toast Notifier */}
       {toast && (
         <div className={`
-          fixed bottom-6 right-6 z-50 flex items-center gap-2 px-5 py-3.5 rounded-2xl shadow-xl border animate-fade-in
+          fixed bottom-6 right-6 z-[100] flex items-center gap-2 px-5 py-3.5 rounded-2xl shadow-xl border animate-fade-in
           ${toast.type === 'success' 
-            ? 'bg-emerald-950/90 text-emerald-400 border-emerald-500/20' 
-            : 'bg-red-950/90 text-red-400 border-red-500/20'
+            ? 'bg-primary/10 text-primary border border-primary/20 backdrop-blur-md' 
+            : 'bg-red-500/10 text-red-500 border border-red-500/20 backdrop-blur-md'
           }
         `}>
           {toast.type === 'success' ? <CheckCircle className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
@@ -114,21 +114,19 @@ export const Orders: React.FC = () => {
       {/* Header section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Orders</h1>
+          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Orders</h1>
           <p className="text-muted-foreground mt-1 text-sm font-medium">
             Browse transaction records, detailed product counts, and handle order cancellations.
           </p>
         </div>
 
-        {!isAdmin && (
-          <button
-            onClick={() => navigate('/orders/new')}
-            className="flex items-center gap-2 px-5 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-white/5"
-          >
-            <Plus className="w-5 h-5" />
-            Place Order
-          </button>
-        )}
+        <button
+        onClick={() => navigate('/orders/new')}
+        className="flex items-center gap-2 px-5 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-primary/5 cursor-pointer"
+      >
+        <Plus className="w-5 h-5" />
+        {isAdmin ? 'Create Order' : 'Place Order'}
+      </button>
       </div>
 
       {/* Filter and Search Bar */}
@@ -139,7 +137,7 @@ export const Orders: React.FC = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search by Order ID or Customer Name..."
-          className="w-full pl-11 pr-4 py-3 bg-card border border-border rounded-xl text-sm text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all"
+          className="w-full pl-11 pr-4 py-3 bg-card border border-border rounded-xl text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all"
         />
       </div>
 
@@ -147,19 +145,19 @@ export const Orders: React.FC = () => {
       {ordersLoading ? (
         <div className="h-96 rounded-2xl bg-card border border-border animate-pulse" />
       ) : filteredOrders.length === 0 ? (
-        <div className="text-center py-20 bg-card rounded-2xl border border-border">
+        <div className="text-center py-20 bg-card rounded-2xl border border-border animate-fade-in">
           <ShoppingCart className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-          <h3 className="font-bold text-white text-lg">No Orders Found</h3>
+          <h3 className="font-bold text-foreground text-lg">No Orders Found</h3>
           <p className="text-muted-foreground text-sm font-medium mt-1">
             Try adjusting your search criteria or create a new order layout.
           </p>
         </div>
       ) : (
-        <div className="glass-card rounded-2xl border border-white/5 overflow-hidden">
+        <div className="glass-card rounded-2xl border border-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-border bg-white/[0.01]">
+                <tr className="border-b border-border bg-card/50">
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Order ID</th>
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Customer Name</th>
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Placed On</th>
@@ -170,15 +168,15 @@ export const Orders: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-border/30">
                 {filteredOrders.map((order: any) => (
-                  <tr key={order.id} className="group hover:bg-white/[0.01] transition-colors">
-                    <td className="px-6 py-4 text-sm font-semibold text-white">#{order.id}</td>
+                  <tr key={order.id} className="group hover:bg-card/40 transition-colors">
+                    <td className="px-6 py-4 text-sm font-semibold text-foreground">#{order.id}</td>
                     <td className="px-6 py-4 text-sm text-muted-foreground font-semibold">
                       {getCustomerName(order.customer_id)}
                     </td>
                     <td className="px-6 py-4 text-sm text-muted-foreground font-medium">
                       {new Date(order.created_at).toLocaleDateString()} {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </td>
-                    <td className="px-6 py-4 text-sm font-black text-emerald-400">${parseFloat(order.total_amount).toFixed(2)}</td>
+                    <td className="px-6 py-4 text-sm font-black text-primary">₹{parseFloat(order.total_amount).toFixed(2)}</td>
                     <td className="px-6 py-4 text-sm text-muted-foreground font-medium">
                       {order.items?.length || 0} unique items
                     </td>
@@ -186,14 +184,14 @@ export const Orders: React.FC = () => {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => setSelectedOrder(order)}
-                          className="p-2 text-muted-foreground hover:text-white hover:bg-accent rounded-lg transition-all"
+                          className="p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-all cursor-pointer"
                           title="View Details"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setCancelConfirmOpen(order)}
-                          className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-500/5 rounded-lg transition-all"
+                          className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-500/5 rounded-lg transition-all cursor-pointer"
                           title="Cancel Order"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -210,28 +208,28 @@ export const Orders: React.FC = () => {
 
       {/* Cancel Confirmation Modal */}
       {cancelConfirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/60 backdrop-blur-sm animate-fade-in">
           <div className="bg-card border border-border p-6 rounded-2xl max-w-sm w-full shadow-2xl space-y-6">
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                 <AlertTriangle className="text-red-400 w-5 h-5" />
                 Cancel Order
               </h3>
               <p className="text-sm text-muted-foreground mt-2">
-                Are you sure you want to cancel order <span className="font-semibold text-white">"#{cancelConfirmOpen.id}"</span>?
+                Are you sure you want to cancel order <span className="font-semibold text-foreground">"#{cancelConfirmOpen.id}"</span>?
                 This action is permanent and will return all items back to inventory stock.
               </p>
             </div>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setCancelConfirmOpen(null)}
-                className="px-4 py-2 bg-accent text-white text-sm font-semibold rounded-xl hover:opacity-95"
+                className="px-4 py-2 bg-accent text-foreground text-sm font-semibold rounded-xl hover:opacity-95 cursor-pointer"
               >
                 No, Back
               </button>
               <button
                 onClick={() => cancelMutation.mutate(cancelConfirmOpen.id)}
-                className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-xl hover:bg-red-500 active:scale-[0.98] transition-all"
+                className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-xl hover:bg-red-500 active:scale-[0.98] transition-all cursor-pointer"
               >
                 {cancelMutation.isPending ? <Loader className="w-4 h-4 animate-spin" /> : 'Yes, Cancel Order'}
               </button>
@@ -244,7 +242,7 @@ export const Orders: React.FC = () => {
       {selectedOrder && (
         <div 
           onClick={() => setSelectedOrder(null)}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-fade-in"
+          className="fixed inset-0 bg-white/60 backdrop-blur-sm z-40 animate-fade-in"
         />
       )}
 
@@ -260,21 +258,21 @@ export const Orders: React.FC = () => {
               {/* Header */}
               <div className="flex items-center justify-between border-b border-border pb-4">
                 <div>
-                  <h2 className="text-xl font-extrabold text-white">Order Details</h2>
+                  <h2 className="text-xl font-extrabold text-foreground">Order Details</h2>
                   <p className="text-xs text-muted-foreground mt-0.5">Order ID #{selectedOrder.id}</p>
                 </div>
                 <button
                   onClick={() => setSelectedOrder(null)}
-                  className="p-1.5 text-muted-foreground hover:text-white rounded-lg hover:bg-accent transition-colors"
+                  className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Customer summary metadata */}
-              <div className="p-4 rounded-xl bg-accent/40 border border-white/5 space-y-2">
+              <div className="p-4 rounded-xl bg-accent/40 border border-border space-y-2">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Customer Context</h4>
-                <p className="text-sm font-bold text-white">{getCustomerName(selectedOrder.customer_id)}</p>
+                <p className="text-sm font-bold text-foreground">{getCustomerName(selectedOrder.customer_id)}</p>
                 <p className="text-xs text-muted-foreground">Reference ID: Customer #{selectedOrder.customer_id}</p>
               </div>
 
@@ -287,18 +285,18 @@ export const Orders: React.FC = () => {
                     return (
                       <div 
                         key={item.id}
-                        className="flex items-center justify-between p-3 bg-white/[0.01] rounded-xl border border-border"
+                        className="flex items-center justify-between p-3 bg-card rounded-xl border border-border"
                       >
                         <div>
-                          <p className="text-sm font-semibold text-white">{prod.name}</p>
+                          <p className="text-sm font-semibold text-foreground">{prod.name}</p>
                           <p className="text-xs text-muted-foreground font-mono mt-0.5">{prod.sku}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-bold text-white">
-                            {item.quantity} x ${parseFloat(item.unit_price).toFixed(2)}
+                          <p className="text-sm font-bold text-foreground">
+                            {item.quantity} x ₹{parseFloat(item.unit_price).toFixed(2)}
                           </p>
-                          <p className="text-xs text-emerald-400 font-bold mt-0.5">
-                            ${(item.quantity * parseFloat(item.unit_price)).toFixed(2)}
+                          <p className="text-xs text-primary font-bold mt-0.5">
+                            ₹{(item.quantity * parseFloat(item.unit_price)).toFixed(2)}
                           </p>
                         </div>
                       </div>
@@ -309,24 +307,40 @@ export const Orders: React.FC = () => {
             </div>
 
             {/* Footer Summary */}
-            <div className="border-t border-border pt-4 mt-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">Grand Total</span>
-                <span className="text-2xl font-black text-emerald-400">
-                  ${parseFloat(selectedOrder.total_amount).toFixed(2)}
+            <div className="border-t border-border pt-4 mt-6 space-y-3">
+              {parseFloat(selectedOrder.gst_rate || '0') > 0 && (
+                <>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-muted-foreground">Taxable Subtotal</span>
+                    <span className="font-bold text-foreground">
+                      ₹{(parseFloat(selectedOrder.total_amount) - parseFloat(selectedOrder.gst_amount || '0')).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-muted-foreground">GST ({parseFloat(selectedOrder.gst_rate).toFixed(0)}%)</span>
+                    <span className="font-bold text-foreground">
+                      ₹{parseFloat(selectedOrder.gst_amount || '0').toFixed(2)}
+                    </span>
+                  </div>
+                </>
+              )}
+              <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                <span className="text-sm font-semibold text-muted-foreground">Grand Total</span>
+                <span className="text-2xl font-black text-primary">
+                  ₹{parseFloat(selectedOrder.total_amount).toFixed(2)}
                 </span>
               </div>
 
               <div className="flex gap-3">
                 <button
                   onClick={() => setSelectedOrder(null)}
-                  className="flex-1 py-3 border border-border text-white text-sm font-semibold rounded-xl hover:bg-accent transition-all"
+                  className="flex-1 py-3 border border-border text-foreground text-sm font-semibold rounded-xl hover:bg-accent transition-all cursor-pointer"
                 >
                   Close Drawer
                 </button>
                 <button
                   onClick={() => setCancelConfirmOpen(selectedOrder)}
-                  className="flex-1 py-3 bg-red-600/10 border border-red-500/20 text-red-400 font-semibold rounded-xl hover:bg-red-500/20 active:scale-[0.98] transition-all"
+                  className="flex-1 py-3 bg-red-600/10 border border-red-500/20 text-red-400 font-semibold rounded-xl hover:bg-red-500/20 active:scale-[0.98] transition-all cursor-pointer"
                 >
                   Cancel Order
                 </button>

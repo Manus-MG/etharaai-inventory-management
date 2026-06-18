@@ -55,6 +55,8 @@ class Order(Base):
         nullable=False
     )
     total_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    gst_rate: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2), nullable=True)
+    gst_amount: Mapped[Optional[Decimal]] = mapped_column(Numeric(10, 2), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),

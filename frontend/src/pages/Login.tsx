@@ -68,19 +68,19 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-950/40 via-background to-background">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background">
       {/* Decorative background glows */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 w-80 h-80 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 w-80 h-80 bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 w-80 h-80 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="w-full max-w-md p-8 rounded-2xl glass-panel relative shadow-[0_0_50px_rgba(59,130,246,0.12)] border border-white/5 animate-slide-in z-10">
+      <div className="w-full max-w-md p-8 rounded-2xl glass-panel relative shadow-[0_0_50px_rgba(13,148,136,0.12)] border border-border animate-slide-in z-10">
         
         {/* Brand Header */}
         <div className="flex flex-col items-center mb-8">
-          <div className="p-3.5 bg-accent rounded-2xl mb-4 border border-white/10 shadow-lg shadow-blue-500/5">
-            <ShoppingCart className="w-8 h-8 text-white" />
+          <div className="p-3.5 bg-accent rounded-2xl mb-4 border border-border shadow-lg shadow-primary/5">
+            <ShoppingCart className="w-8 h-8 text-primary" />
           </div>
-          <h2 className="text-3xl font-extrabold text-white tracking-tight">Welcome Back</h2>
+          <h2 className="text-3xl font-extrabold text-foreground tracking-tight">Welcome Back</h2>
           <p className="text-sm text-muted-foreground mt-2 font-medium">Sign in to manage inventory & orders</p>
         </div>
 
@@ -101,7 +101,7 @@ export const Login: React.FC = () => {
                 type="email"
                 {...register('email')}
                 placeholder="e.g. admin@inventory.com"
-                className={`w-full pl-11 pr-4 py-3 rounded-xl bg-white/[0.02] border text-sm text-white placeholder:text-muted-foreground/40 focus:outline-none focus:bg-white/[0.04] focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 ${
+                className={`w-full pl-11 pr-4 py-3 rounded-xl bg-card border text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200 ${
                   errors.email ? 'border-red-500/40' : 'border-border'
                 }`}
               />
@@ -121,7 +121,7 @@ export const Login: React.FC = () => {
                 type="password"
                 {...register('password')}
                 placeholder="••••••••"
-                className={`w-full pl-11 pr-4 py-3 rounded-xl bg-white/[0.02] border text-sm text-white placeholder:text-muted-foreground/40 focus:outline-none focus:bg-white/[0.04] focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 ${
+                className={`w-full pl-11 pr-4 py-3 rounded-xl bg-card border text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200 ${
                   errors.password ? 'border-red-500/40' : 'border-border'
                 }`}
               />
@@ -134,10 +134,10 @@ export const Login: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="flex items-center justify-center gap-2 w-full py-3.5 bg-white text-black hover:bg-slate-100 font-semibold rounded-xl active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg cursor-pointer"
+            className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary text-primary-foreground hover:opacity-90 font-semibold rounded-xl active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg cursor-pointer"
           >
             {isLoading ? (
-              <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
                 <LogIn className="w-5 h-5" />
@@ -150,7 +150,7 @@ export const Login: React.FC = () => {
         <div className="mt-8 text-center text-sm">
           <p className="text-muted-foreground font-medium">
             New customer?{' '}
-            <Link to="/register" className="text-white font-bold hover:underline">
+            <Link to="/register" className="text-primary font-bold hover:underline">
               Create an account
             </Link>
           </p>

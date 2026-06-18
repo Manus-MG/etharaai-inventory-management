@@ -23,23 +23,13 @@ async def create_order(
     Creates a new order. Validates customer and stock levels atomically,
     deducts product inventory levels, and calculates pricing totals.
     """
-    # Verify that user role is customer
-    if current_user.role != "customer":
+    if current_user.role not in ("admin", "customer"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only customers can place orders."
+            detail="Only admin or customers can place orders."
         )
 
-    # 1. Verify that the Customer exists and belongs to current user
-    customer_query = await db.execute(select(Customer).where(Customer.user_id == current_user.id))
-    customer = customer_query.scalar_one_or_none()
-    if not customer:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Customer profile not found for the authenticated user."
-        )
-
-    # 2. Group order items by product_id to validate aggregate stock requirements
+    # Group order items by product_id to validate aggregate stock requirements
     grouped_items = defaultdict(int)
     for item in order_in.items:
         grouped_items[item.product_id] += item.quantity
@@ -48,7 +38,47 @@ async def create_order(
     db_order_items = []
 
     try:
-        # 3. Process each product under a write-lock (SELECT ... FOR UPDATE)
+        # 1. Resolve Customer
+        if current_user.role == "customer":
+            customer_query = await db.execute(select(Customer).where(Customer.user_id == current_user.id))
+            customer = customer_query.scalar_one_or_none()
+            if not customer:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Customer profile not found for the authenticated user."
+                )
+        else:  # admin
+            if order_in.customer_id is not None:
+                customer_query = await db.execute(select(Customer).where(Customer.id == order_in.customer_id))
+                customer = customer_query.scalar_one_or_none()
+                if not customer:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"Customer with ID {order_in.customer_id} not found."
+                    )
+            elif order_in.customer_details is not None:
+                # Check email conflict
+                email_check = await db.execute(select(Customer).where(Customer.email == order_in.customer_details.email))
+                if email_check.scalar_one_or_none():
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail=f"Customer with email '{order_in.customer_details.email}' already exists."
+                    )
+                # Register customer
+                customer = Customer(
+                    full_name=order_in.customer_details.full_name,
+                    email=order_in.customer_details.email,
+                    phone_number=order_in.customer_details.phone_number
+                )
+                db.add(customer)
+                await db.flush()  # Populate customer.id
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Either customer_id or customer_details must be provided."
+                )
+
+        # 2. Process each product under a write-lock (SELECT ... FOR UPDATE)
         for product_id, requested_qty in grouped_items.items():
             product_query = await db.execute(
                 select(Product)
@@ -87,10 +117,17 @@ async def create_order(
             )
             db_order_items.append(db_order_item)
 
+        # 3. Calculate GST and Grand Total
+        gst_rate = order_in.gst_rate or Decimal("0.00")
+        gst_amount = total_amount * (gst_rate / Decimal("100.00"))
+        grand_total = total_amount + gst_amount
+
         # 4. Construct Order record
         db_order = Order(
             customer_id=customer.id,
-            total_amount=total_amount,
+            total_amount=grand_total,
+            gst_rate=gst_rate,
+            gst_amount=gst_amount,
             items=db_order_items
         )
 

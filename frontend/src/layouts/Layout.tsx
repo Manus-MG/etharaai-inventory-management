@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/store';
+import { useThemeStore } from '../store/themeStore';
 import { 
   LayoutDashboard, 
   Package, 
@@ -9,10 +10,13 @@ import {
   LogOut, 
   Menu, 
   X,
-  UserCheck
+  UserCheck,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { theme, toggleTheme } = useThemeStore();
   const { user, logout } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
@@ -42,14 +46,23 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       <div className="flex md:hidden items-center justify-between px-4 py-3 bg-card border-b border-border z-20">
         <div className="flex items-center gap-2">
           <ShoppingCart className="w-6 h-6 text-primary" />
-          <span className="font-bold text-lg tracking-wider text-white">ETHARA</span>
+          <span className="font-bold text-lg tracking-wider text-foreground">ETHARA</span>
         </div>
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="p-1 text-foreground hover:text-white transition-colors"
-        >
-          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleTheme}
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-xl transition-all"
+            aria-label="Toggle Theme"
+          >
+            {theme === 'dark' ? <Sun className="w-5 h-5 text-yellow-500" /> : <Moon className="w-5 h-5 text-primary" />}
+          </button>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-1 text-foreground hover:text-primary transition-colors"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Sidebar - Desktop */}
@@ -64,7 +77,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             <ShoppingCart className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="font-extrabold text-xl tracking-tight text-white">Ethara</h1>
+            <h1 className="font-extrabold text-xl tracking-tight text-foreground">Ethara</h1>
             <p className="text-xs text-muted-foreground font-medium">Inventory System</p>
           </div>
         </div>
@@ -98,11 +111,11 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <div className="p-4 border-t border-border bg-card">
           <div className="flex items-center gap-3 px-2 py-3 rounded-lg mb-2">
             <div className="p-2 bg-accent rounded-full text-muted-foreground">
-              <UserCheck className="w-4 h-4 text-emerald-400" />
+              <UserCheck className="w-4 h-4 text-primary" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-white truncate">{user?.email}</p>
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 capitalize mt-0.5">
+              <p className="text-xs font-semibold text-foreground truncate">{user?.email}</p>
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 capitalize mt-0.5">
                 {user?.role}
               </span>
             </div>
@@ -123,16 +136,23 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         {/* Desktop Header */}
         <header className="hidden md:flex items-center justify-between px-8 py-5 border-b border-border bg-background z-10">
           <div>
-            <h2 className="text-lg font-semibold text-white capitalize">
+            <h2 className="text-lg font-semibold text-foreground capitalize">
               {location.pathname.substring(1).split('/')[0] || 'Dashboard'}
             </h2>
           </div>
           <div className="flex items-center gap-4">
+            <button
+              onClick={toggleTheme}
+              className="p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-xl transition-all"
+              aria-label="Toggle Theme"
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5 text-yellow-500" /> : <Moon className="w-5 h-5 text-primary" />}
+            </button>
             <div className="text-right">
               <p className="text-xs font-medium text-muted-foreground">Logged in as</p>
-              <p className="text-sm font-semibold text-white">{user?.email}</p>
+              <p className="text-sm font-semibold text-foreground">{user?.email}</p>
             </div>
-            <div className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 capitalize">
+            <div className="px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 capitalize">
               {user?.role}
             </div>
           </div>
@@ -148,7 +168,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       {mobileMenuOpen && (
         <div 
           onClick={() => setMobileMenuOpen(false)}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 md:hidden"
+          className="fixed inset-0 bg-white/60 backdrop-blur-sm z-20 md:hidden"
         />
       )}
     </div>

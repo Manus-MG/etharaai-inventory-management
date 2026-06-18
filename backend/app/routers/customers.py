@@ -5,7 +5,7 @@ from sqlalchemy.future import select
 from sqlalchemy.exc import IntegrityError
 from backend.app.database import get_db
 from backend.app.models import Customer, User
-from backend.app.schemas import CustomerCreate, CustomerResponse
+from backend.app.schemas import CustomerCreate, CustomerResponse, CustomerUpdate
 from backend.app.auth import get_current_active_admin
 
 router = APIRouter(prefix="/customers", tags=["Customers"])
@@ -103,3 +103,48 @@ async def delete_customer(
             detail="Cannot delete customer because they are referenced in existing orders."
         )
     return None
+
+@router.put("/{customer_id}", response_model=CustomerResponse)
+async def update_customer(
+    customer_id: int,
+    customer_in: CustomerUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_admin: User = Depends(get_current_active_admin)
+):
+    """
+    Updates details of an existing customer by ID. Validates email uniqueness.
+    """
+    result = await db.execute(select(Customer).where(Customer.id == customer_id))
+    customer = result.scalar_one_or_none()
+    if not customer:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Customer with ID {customer_id} not found."
+        )
+        
+    if customer_in.email is not None and customer_in.email != customer.email:
+        email_check = await db.execute(
+            select(Customer).where(Customer.email == customer_in.email, Customer.id != customer_id)
+        )
+        if email_check.scalar_one_or_none():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Customer with email '{customer_in.email}' already exists."
+            )
+        customer.email = customer_in.email
+
+    if customer_in.full_name is not None:
+        customer.full_name = customer_in.full_name
+    if customer_in.phone_number is not None:
+        customer.phone_number = customer_in.phone_number
+
+    try:
+        await db.commit()
+        await db.refresh(customer)
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Database integrity check failed."
+        )
+    return customer

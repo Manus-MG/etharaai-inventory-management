@@ -239,3 +239,127 @@ async def test_order_security_boundaries(
     
     # Cleanup app dependency overrides manually
     app.dependency_overrides.clear()
+
+
+async def test_admin_create_order_existing_customer(admin_client: AsyncClient, db_customer: Customer):
+    # 1. Create a product
+    p_resp = await admin_client.post(
+        "/products",
+        json={"name": "Admin Product 1", "sku": "SKU-ADM1", "price": "100.00", "quantity_in_stock": 10}
+    )
+    assert p_resp.status_code == 201
+    product_id = p_resp.json()["id"]
+
+    # 2. Admin places order using existing customer id
+    order_resp = await admin_client.post(
+        "/orders",
+        json={
+            "customer_id": db_customer.id,
+            "items": [{"product_id": product_id, "quantity": 2}]
+        }
+    )
+    assert order_resp.status_code == 201
+    order_data = order_resp.json()
+    assert order_data["customer_id"] == db_customer.id
+    assert order_data["total_amount"] == "200.00"
+
+
+async def test_admin_create_order_new_customer_registration(admin_client: AsyncClient, db_session: AsyncSession):
+    # 1. Create a product
+    p_resp = await admin_client.post(
+        "/products",
+        json={"name": "Admin Product 2", "sku": "SKU-ADM2", "price": "50.00", "quantity_in_stock": 5}
+    )
+    assert p_resp.status_code == 201
+    product_id = p_resp.json()["id"]
+
+    # 2. Admin places order and registers new customer dynamically
+    customer_email = "dynamic_cust@example.com"
+    order_resp = await admin_client.post(
+        "/orders",
+        json={
+            "customer_details": {
+                "full_name": "Dynamic Customer",
+                "email": customer_email,
+                "phone_number": "123-456-7890"
+            },
+            "items": [{"product_id": product_id, "quantity": 1}]
+        }
+    )
+    assert order_resp.status_code == 201
+    order_data = order_resp.json()
+    assert order_data["total_amount"] == "50.00"
+
+    # 3. Verify customer was registered in DB
+    from backend.app.models import Customer as ModelCustomer
+    from sqlalchemy.future import select
+    res = await db_session.execute(select(ModelCustomer).where(ModelCustomer.email == customer_email))
+    customer = res.scalar_one_or_none()
+    assert customer is not None
+    assert customer.full_name == "Dynamic Customer"
+    assert order_data["customer_id"] == customer.id
+
+
+async def test_admin_create_order_invalid_payload(admin_client: AsyncClient):
+    p_resp = await admin_client.post(
+        "/products",
+        json={"name": "Admin Product 3", "sku": "SKU-ADM3", "price": "10.00", "quantity_in_stock": 5}
+    )
+    product_id = p_resp.json()["id"]
+
+    order_resp = await admin_client.post(
+        "/orders",
+        json={
+            "items": [{"product_id": product_id, "quantity": 1}]
+        }
+    )
+    assert order_resp.status_code == 400
+    assert "Either customer_id or customer_details must be provided" in order_resp.json()["detail"]
+
+
+async def test_admin_create_order_duplicate_customer_email(admin_client: AsyncClient, db_customer: Customer):
+    p_resp = await admin_client.post(
+        "/products",
+        json={"name": "Admin Product 4", "sku": "SKU-ADM4", "price": "10.00", "quantity_in_stock": 5}
+    )
+    product_id = p_resp.json()["id"]
+
+    order_resp = await admin_client.post(
+        "/orders",
+        json={
+            "customer_details": {
+                "full_name": "Duplicate User",
+                "email": db_customer.email,
+                "phone_number": "000-000-0000"
+            },
+            "items": [{"product_id": product_id, "quantity": 1}]
+        }
+    )
+    assert order_resp.status_code == 409
+    assert "already exists" in order_resp.json()["detail"]
+
+
+async def test_admin_create_order_with_gst_slab(admin_client: AsyncClient, db_customer: Customer):
+    # 1. Create a product
+    p_resp = await admin_client.post(
+        "/products",
+        json={"name": "Taxable Product", "sku": "SKU-TAX", "price": "100.00", "quantity_in_stock": 10}
+    )
+    assert p_resp.status_code == 201
+    product_id = p_resp.json()["id"]
+
+    # 2. Place order with 18% GST slab
+    order_resp = await admin_client.post(
+        "/orders",
+        json={
+            "customer_id": db_customer.id,
+            "gst_rate": "18.00",
+            "items": [{"product_id": product_id, "quantity": 2}]
+        }
+    )
+    assert order_resp.status_code == 201
+    order_data = order_resp.json()
+    # Subtotal is 200.00. GST (18%) is 36.00. Total amount should be 236.00
+    assert float(order_data["gst_rate"]) == 18.00
+    assert float(order_data["gst_amount"]) == 36.00
+    assert float(order_data["total_amount"]) == 236.00

@@ -61,7 +61,9 @@ class OrderItemCreate(BaseModel):
     quantity: int = Field(..., gt=0, description="Quantity ordered (must be greater than 0)")
 
 class OrderCreate(BaseModel):
-    customer_id: int = Field(..., description="ID of the customer placing the order")
+    customer_id: Optional[int] = Field(None, description="ID of the customer placing the order")
+    customer_details: Optional[CustomerCreate] = Field(None, description="Details of a new customer to be registered during order creation")
+    gst_rate: Optional[Decimal] = Field(Decimal("0.00"), description="GST rate slab in percentage (e.g. 5, 12, 18, 28)")
     items: List[OrderItemCreate] = Field(..., min_length=1, description="List of ordered items (must contain at least 1 item)")
 
 class OrderItemResponse(BaseModel):
@@ -77,6 +79,8 @@ class OrderResponse(BaseModel):
     id: int
     customer_id: int
     total_amount: Decimal
+    gst_rate: Optional[Decimal] = Decimal("0.00")
+    gst_amount: Optional[Decimal] = Decimal("0.00")
     created_at: datetime
     items: List[OrderItemResponse]
 

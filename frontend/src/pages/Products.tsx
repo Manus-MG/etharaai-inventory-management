@@ -155,10 +155,10 @@ export const Products: React.FC = () => {
       {/* Toast Notification Container */}
       {toast && (
         <div className={`
-          fixed bottom-6 right-6 z-50 flex items-center gap-2 px-5 py-3.5 rounded-2xl shadow-xl border animate-fade-in
+          fixed bottom-6 right-6 z-[100] flex items-center gap-2 px-5 py-3.5 rounded-2xl shadow-xl border animate-fade-in
           ${toast.type === 'success' 
-            ? 'bg-emerald-950/90 text-emerald-400 border-emerald-500/20' 
-            : 'bg-red-950/90 text-red-400 border-red-500/20'
+            ? 'bg-primary/10 text-primary border border-primary/20 backdrop-blur-md' 
+            : 'bg-red-500/10 text-red-500 border border-red-500/20 backdrop-blur-md'
           }
         `}>
           {toast.type === 'success' ? <CheckCircle className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
@@ -169,7 +169,7 @@ export const Products: React.FC = () => {
       {/* Header section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Products</h1>
+          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Products</h1>
           <p className="text-muted-foreground mt-1 text-sm font-medium">
             Manage your stock quantities, prices, SKUs, and core catalog variables.
           </p>
@@ -178,7 +178,7 @@ export const Products: React.FC = () => {
         {isAdmin && (
           <button
             onClick={openAddDrawer}
-            className="flex items-center gap-2 px-5 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-white/5"
+            className="flex items-center gap-2 px-5 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-primary/5 cursor-pointer"
           >
             <Plus className="w-5 h-5" />
             Add Product
@@ -196,7 +196,7 @@ export const Products: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name or SKU..."
-            className="w-full pl-11 pr-4 py-3 bg-card border border-border rounded-xl text-sm text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all"
+            className="w-full pl-11 pr-4 py-3 bg-card border border-border rounded-xl text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all"
           />
         </div>
         
@@ -204,9 +204,9 @@ export const Products: React.FC = () => {
         <div className="flex gap-2">
           <button
             onClick={() => setStockFilter('all')}
-            className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+            className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
               stockFilter === 'all' 
-                ? 'bg-accent text-white border border-white/5' 
+                ? 'bg-primary text-primary-foreground border border-primary/20' 
                 : 'text-muted-foreground hover:bg-card border border-transparent'
             }`}
           >
@@ -232,17 +232,17 @@ export const Products: React.FC = () => {
       ) : filteredProducts.length === 0 ? (
         <div className="text-center py-20 bg-card rounded-2xl border border-border">
           <AlertTriangle className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-          <h3 className="font-bold text-white text-lg">No Products Found</h3>
+          <h3 className="font-bold text-foreground text-lg">No Products Found</h3>
           <p className="text-muted-foreground text-sm font-medium mt-1">
             Try adjusting your search criteria or register a new product profile.
           </p>
         </div>
       ) : (
-        <div className="glass-card rounded-2xl border border-white/5 overflow-hidden">
+        <div className="glass-card rounded-2xl border border-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-border bg-white/[0.01]">
+                <tr className="border-b border-border bg-card/50">
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Product Name</th>
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">SKU</th>
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Price</th>
@@ -258,27 +258,27 @@ export const Products: React.FC = () => {
                     <tr 
                       key={product.id} 
                       className={`
-                        group hover:bg-white/[0.01] transition-colors
+                        group hover:bg-card/40 transition-colors
                         ${isLowStock ? 'bg-amber-500/[0.02]' : ''}
                       `}
                     >
                       <td className="px-6 py-4">
-                        <p className="text-sm font-semibold text-white">{product.name}</p>
+                        <p className="text-sm font-semibold text-foreground">{product.name}</p>
                       </td>
                       <td className="px-6 py-4 text-sm text-muted-foreground font-mono">{product.sku}</td>
-                      <td className="px-6 py-4 text-sm font-bold text-emerald-400">${parseFloat(product.price).toFixed(2)}</td>
+                      <td className="px-6 py-4 text-sm font-bold text-primary">₹{parseFloat(product.price).toFixed(2)}</td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                           product.quantity_in_stock === 0 
-                            ? 'bg-red-500/10 text-red-400 border-red-500/20'
+                            ? 'bg-red-500/10 text-red-500 border-red-500/20'
                             : isLowStock 
-                              ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                              : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                              ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                              : 'bg-primary/10 text-primary border-primary/20'
                         }`}>
                           {product.quantity_in_stock === 0 ? 'Out of Stock' : isLowStock ? 'Low Stock' : 'In Stock'}
                         </span>
                       </td>
-                      <td className={`px-6 py-4 text-sm font-semibold ${isLowStock ? 'text-amber-400 font-bold' : 'text-white'}`}>
+                      <td className={`px-6 py-4 text-sm font-semibold ${isLowStock ? 'text-amber-400 font-bold' : 'text-foreground'}`}>
                         {product.quantity_in_stock} units
                       </td>
                       {isAdmin && (
@@ -286,14 +286,14 @@ export const Products: React.FC = () => {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => openEditDrawer(product)}
-                              className="p-2 text-muted-foreground hover:text-white hover:bg-accent rounded-lg transition-all"
+                              className="p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-all cursor-pointer"
                               title="Edit"
                             >
                               <Edit className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => setDeleteConfirmOpen(product)}
-                              className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-500/5 rounded-lg transition-all"
+                              className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-500/5 rounded-lg transition-all cursor-pointer"
                               title="Delete"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -312,24 +312,24 @@ export const Products: React.FC = () => {
 
       {/* Delete Confirmation Dialog */}
       {deleteConfirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/60 backdrop-blur-sm animate-fade-in">
           <div className="bg-card border border-border p-6 rounded-2xl max-w-sm w-full shadow-2xl space-y-6">
             <div>
-              <h3 className="text-lg font-bold text-white">Delete Product</h3>
+              <h3 className="text-lg font-bold text-foreground">Delete Product</h3>
               <p className="text-sm text-muted-foreground mt-2">
-                Are you sure you want to delete <span className="font-semibold text-white">"{deleteConfirmOpen.name}"</span>? This action is permanent.
+                Are you sure you want to delete <span className="font-semibold text-foreground">"{deleteConfirmOpen.name}"</span>? This action is permanent.
               </p>
             </div>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setDeleteConfirmOpen(null)}
-                className="px-4 py-2 bg-accent text-white text-sm font-semibold rounded-xl hover:opacity-95"
+                className="px-4 py-2 bg-accent text-foreground text-sm font-semibold rounded-xl hover:opacity-95 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={() => deleteMutation.mutate(deleteConfirmOpen.id)}
-                className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-xl hover:bg-red-500 active:scale-[0.98] transition-all"
+                className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-xl hover:bg-red-500 active:scale-[0.98] transition-all cursor-pointer"
               >
                 {deleteMutation.isPending ? <Loader className="w-4 h-4 animate-spin" /> : 'Delete'}
               </button>
@@ -342,7 +342,7 @@ export const Products: React.FC = () => {
       {drawerOpen && (
         <div 
           onClick={closeDrawer}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-fade-in"
+          className="fixed inset-0 bg-white/60 backdrop-blur-sm z-40 animate-fade-in"
         />
       )}
 
@@ -354,13 +354,13 @@ export const Products: React.FC = () => {
       `}>
         <div className="space-y-6">
           <div className="flex items-center justify-between border-b border-border pb-4">
-            <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
+            <h2 className="text-xl font-extrabold text-foreground flex items-center gap-2">
               <PackagePlus className="w-5 h-5 text-muted-foreground" />
               {editingProduct ? 'Edit Product' : 'Add New Product'}
             </h2>
             <button
               onClick={closeDrawer}
-              className="p-1.5 text-muted-foreground hover:text-white rounded-lg hover:bg-accent transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -375,7 +375,7 @@ export const Products: React.FC = () => {
                 type="text"
                 {...register('name')}
                 placeholder="e.g. Wireless Mouse"
-                className={`w-full px-4 py-2.5 rounded-xl bg-background border text-sm text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                className={`w-full px-4 py-2.5 rounded-xl bg-background border text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
                   errors.name ? 'border-red-500/50' : 'border-border focus:border-primary/50'
                 }`}
               />
@@ -393,7 +393,7 @@ export const Products: React.FC = () => {
                 {...register('sku')}
                 disabled={!!editingProduct}
                 placeholder="e.g. MOUSE-WL-01"
-                className={`w-full px-4 py-2.5 rounded-xl bg-background border text-sm text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50 ${
+                className={`w-full px-4 py-2.5 rounded-xl bg-background border text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50 ${
                   errors.sku ? 'border-red-500/50' : 'border-border focus:border-primary/50'
                 }`}
               />
@@ -404,14 +404,14 @@ export const Products: React.FC = () => {
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-                Unit Price ($)
+                Unit Price (₹)
               </label>
               <input
                 type="number"
                 step="0.01"
                 {...register('price')}
                 placeholder="e.g. 29.99"
-                className={`w-full px-4 py-2.5 rounded-xl bg-background border text-sm text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                className={`w-full px-4 py-2.5 rounded-xl bg-background border text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
                   errors.price ? 'border-red-500/50' : 'border-border focus:border-primary/50'
                 }`}
               />
@@ -428,7 +428,7 @@ export const Products: React.FC = () => {
                 type="number"
                 {...register('quantity_in_stock')}
                 placeholder="e.g. 150"
-                className={`w-full px-4 py-2.5 rounded-xl bg-background border text-sm text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                className={`w-full px-4 py-2.5 rounded-xl bg-background border text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
                   errors.quantity_in_stock ? 'border-red-500/50' : 'border-border focus:border-primary/50'
                 }`}
               />
@@ -443,7 +443,7 @@ export const Products: React.FC = () => {
           <button
             type="button"
             onClick={closeDrawer}
-            className="flex-1 py-3 border border-border text-white text-sm font-semibold rounded-xl hover:bg-accent transition-all"
+            className="flex-1 py-3 border border-border text-foreground text-sm font-semibold rounded-xl hover:bg-accent transition-all cursor-pointer"
           >
             Cancel
           </button>
@@ -451,7 +451,7 @@ export const Products: React.FC = () => {
             type="submit"
             form="product-form"
             disabled={createMutation.isPending || updateMutation.isPending}
-            className="flex-1 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
+            className="flex-1 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
           >
             {createMutation.isPending || updateMutation.isPending ? (
               <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin mx-auto" />

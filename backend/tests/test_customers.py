@@ -140,3 +140,57 @@ async def test_customer_role_restrictions(customer_client: AsyncClient):
     # Customer trying to delete customer profile -> 403 Forbidden
     delete_resp = await customer_client.delete("/customers/1")
     assert delete_resp.status_code == 403
+
+async def test_update_customer(admin_client: AsyncClient):
+    # Create customer
+    create_resp = await admin_client.post(
+        "/customers",
+        json={"full_name": "Dave Brown", "email": "dave@example.com", "phone_number": "555-555-5555"}
+    )
+    customer_id = create_resp.json()["id"]
+
+    # Update customer info
+    update_resp = await admin_client.put(
+        "/customers/{}".format(customer_id),
+        json={"full_name": "Dave Brown Jr.", "email": "dave.jr@example.com", "phone_number": "555-555-1234"}
+    )
+    assert update_resp.status_code == 200
+    data = update_resp.json()
+    assert data["full_name"] == "Dave Brown Jr."
+    assert data["email"] == "dave.jr@example.com"
+    assert data["phone_number"] == "555-555-1234"
+
+async def test_update_customer_not_found(admin_client: AsyncClient):
+    response = await admin_client.put(
+        "/customers/99999",
+        json={"full_name": "Ghost", "email": "ghost@example.com", "phone_number": "000"}
+    )
+    assert response.status_code == 404
+
+async def test_update_customer_duplicate_email(admin_client: AsyncClient):
+    # Create customer A
+    await admin_client.post(
+        "/customers",
+        json={"full_name": "Customer A", "email": "a_edit@example.com", "phone_number": "111"}
+    )
+    # Create customer B
+    create_resp_b = await admin_client.post(
+        "/customers",
+        json={"full_name": "Customer B", "email": "b_edit@example.com", "phone_number": "222"}
+    )
+    customer_id_b = create_resp_b.json()["id"]
+
+    # Try to update customer B's email to customer A's email
+    response = await admin_client.put(
+        "/customers/{}".format(customer_id_b),
+        json={"email": "a_edit@example.com"}
+    )
+    assert response.status_code == 409
+    assert "already exists" in response.json()["detail"]
+
+async def test_update_customer_role_restrictions(customer_client: AsyncClient):
+    response = await customer_client.put(
+        "/customers/1",
+        json={"full_name": "Hacker Edit"}
+    )
+    assert response.status_code == 403

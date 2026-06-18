@@ -57,19 +57,19 @@ export const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-950/40 via-background to-background">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background">
       {/* Background glows */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 w-80 h-80 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 w-80 h-80 bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 w-80 h-80 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="w-full max-w-md p-8 rounded-2xl glass-panel relative shadow-[0_0_50px_rgba(59,130,246,0.12)] border border-white/5 animate-slide-in z-10">
+      <div className="w-full max-w-md p-8 rounded-2xl glass-panel relative shadow-[0_0_50px_rgba(13,148,136,0.12)] border border-border animate-slide-in z-10">
         
         {/* Brand Header */}
         <div className="flex flex-col items-center mb-6">
-          <div className="p-3 bg-accent rounded-2xl mb-4 border border-white/10 shadow-lg shadow-blue-500/5">
-            <ShoppingCart className="w-8 h-8 text-white" />
+          <div className="p-3 bg-accent rounded-2xl mb-4 border border-border shadow-lg shadow-primary/5">
+            <ShoppingCart className="w-8 h-8 text-primary" />
           </div>
-          <h2 className="text-3xl font-extrabold text-white tracking-tight">Create Account</h2>
+          <h2 className="text-3xl font-extrabold text-foreground tracking-tight">Create Account</h2>
           <p className="text-sm text-muted-foreground mt-2 font-medium">Join as an inventory customer</p>
         </div>
 
@@ -80,7 +80,7 @@ export const Register: React.FC = () => {
         )}
 
         {success && (
-          <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-sm text-emerald-400 font-medium animate-fade-in">
+          <div className="mb-6 p-4 rounded-xl bg-primary/10 border border-primary/20 text-sm text-primary font-medium animate-fade-in">
             {success}
           </div>
         )}
@@ -96,7 +96,7 @@ export const Register: React.FC = () => {
                 type="text"
                 {...register('fullName')}
                 placeholder="e.g. John Doe"
-                className={`w-full pl-11 pr-4 py-2.5 rounded-xl bg-white/[0.02] border text-sm text-white placeholder:text-muted-foreground/40 focus:outline-none focus:bg-white/[0.04] focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 ${
+                className={`w-full pl-11 pr-4 py-2.5 rounded-xl bg-card border text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200 ${
                   errors.fullName ? 'border-red-500/40' : 'border-border'
                 }`}
               />
@@ -116,7 +116,7 @@ export const Register: React.FC = () => {
                 type="email"
                 {...register('email')}
                 placeholder="e.g. john@example.com"
-                className={`w-full pl-11 pr-4 py-2.5 rounded-xl bg-white/[0.02] border text-sm text-white placeholder:text-muted-foreground/40 focus:outline-none focus:bg-white/[0.04] focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 ${
+                className={`w-full pl-11 pr-4 py-2.5 rounded-xl bg-card border text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200 ${
                   errors.email ? 'border-red-500/40' : 'border-border'
                 }`}
               />
@@ -136,7 +136,7 @@ export const Register: React.FC = () => {
                 type="text"
                 {...register('phoneNumber')}
                 placeholder="e.g. 555-0199"
-                className={`w-full pl-11 pr-4 py-2.5 rounded-xl bg-white/[0.02] border text-sm text-white placeholder:text-muted-foreground/40 focus:outline-none focus:bg-white/[0.04] focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 ${
+                className={`w-full pl-11 pr-4 py-2.5 rounded-xl bg-card border text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200 ${
                   errors.phoneNumber ? 'border-red-500/40' : 'border-border'
                 }`}
               />
@@ -156,7 +156,7 @@ export const Register: React.FC = () => {
                 type="password"
                 {...register('password')}
                 placeholder="••••••••"
-                className={`w-full pl-11 pr-4 py-2.5 rounded-xl bg-white/[0.02] border text-sm text-white placeholder:text-muted-foreground/40 focus:outline-none focus:bg-white/[0.04] focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 ${
+                className={`w-full pl-11 pr-4 py-2.5 rounded-xl bg-card border text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200 ${
                   errors.password ? 'border-red-500/40' : 'border-border'
                 }`}
               />
@@ -169,10 +169,10 @@ export const Register: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="flex items-center justify-center gap-2 w-full py-3 bg-white text-black hover:bg-slate-100 font-semibold rounded-xl active:scale-[0.98] transition-all disabled:opacity-50 mt-4 shadow-lg cursor-pointer"
+            className="flex items-center justify-center gap-2 w-full py-3 bg-primary text-primary-foreground hover:opacity-90 font-semibold rounded-xl active:scale-[0.98] transition-all disabled:opacity-50 mt-4 shadow-lg cursor-pointer"
           >
             {isLoading ? (
-              <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
                 <UserPlus className="w-5 h-5" />
@@ -185,7 +185,7 @@ export const Register: React.FC = () => {
         <div className="mt-6 text-center text-sm">
           <p className="text-muted-foreground font-medium">
             Already have an account?{' '}
-            <Link to="/login" className="text-white font-bold hover:underline">
+            <Link to="/login" className="text-primary font-bold hover:underline">
               Sign In
             </Link>
           </p>

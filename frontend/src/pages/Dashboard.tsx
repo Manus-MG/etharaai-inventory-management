@@ -68,7 +68,7 @@ export const Dashboard: React.FC = () => {
       name: 'Total Products',
       value: totalProducts,
       icon: Package,
-      color: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+      color: 'text-primary bg-primary/10 border-primary/20',
       action: () => navigate('/products'),
       show: true,
     },
@@ -76,7 +76,7 @@ export const Dashboard: React.FC = () => {
       name: 'Total Customers',
       value: isAdmin ? totalCustomers : 'N/A',
       icon: Users,
-      color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+      color: 'text-teal-600 bg-teal-600/10 border-teal-600/20 dark:text-teal-400 dark:bg-teal-400/10 dark:border-teal-400/20',
       action: () => isAdmin && navigate('/customers'),
       show: isAdmin,
     },
@@ -84,7 +84,7 @@ export const Dashboard: React.FC = () => {
       name: 'Total Orders',
       value: totalOrders,
       icon: ShoppingCart,
-      color: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
+      color: 'text-cyan-600 bg-cyan-600/10 border-cyan-600/20 dark:text-cyan-400 dark:bg-cyan-500/10 dark:border-cyan-500/20',
       action: () => navigate('/orders'),
       show: true,
     },
@@ -93,8 +93,8 @@ export const Dashboard: React.FC = () => {
       value: lowStockCount,
       icon: AlertTriangle,
       color: lowStockCount > 0 
-        ? 'text-amber-400 bg-amber-500/10 border-amber-500/20 animate-pulse' 
-        : 'text-slate-400 bg-slate-500/10 border-slate-500/20',
+        ? 'text-amber-500 bg-amber-500/10 border-amber-500/20 dark:text-amber-400 dark:bg-amber-500/10 dark:border-amber-500/20 animate-pulse' 
+        : 'text-muted-foreground bg-muted border-border',
       action: () => navigate('/products?filter=low-stock'),
       show: true,
     },
@@ -118,8 +118,8 @@ export const Dashboard: React.FC = () => {
     <div className="space-y-8">
       {/* Title */}
       <div>
-        <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-2">
-          Dashboard Overview <TrendingUp className="w-6 h-6 text-emerald-400" />
+        <h1 className="text-3xl font-extrabold text-foreground tracking-tight flex items-center gap-2">
+          Dashboard Overview <TrendingUp className="w-6 h-6 text-primary" />
         </h1>
         <p className="text-muted-foreground mt-1 text-sm font-medium">
           Real-time metrics, low-stock notifications, and transactional updates.
@@ -140,7 +140,7 @@ export const Dashboard: React.FC = () => {
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {stat.name}
                 </p>
-                <p className="text-3xl font-black text-white">{stat.value}</p>
+                <p className="text-3xl font-black text-foreground">{stat.value}</p>
               </div>
               <div className={`p-4 rounded-xl border ${stat.color}`}>
                 <Icon className="w-6 h-6" />
@@ -151,15 +151,15 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Recent Activity Log */}
-      <div className="glass-card rounded-2xl p-6 border border-white/5">
+      <div className="glass-card rounded-2xl p-6 border border-border">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-lg font-bold text-white">Recent Orders</h3>
+            <h3 className="text-lg font-bold text-foreground">Recent Orders</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Last 5 orders placed on the system</p>
           </div>
           <button
             onClick={() => navigate('/orders')}
-            className="flex items-center gap-1.5 text-sm font-semibold text-white hover:text-primary transition-colors"
+            className="flex items-center gap-1.5 text-sm font-semibold text-foreground hover:text-primary transition-colors"
           >
             View All Orders <ArrowRight className="w-4 h-4" />
           </button>
@@ -191,9 +191,9 @@ export const Dashboard: React.FC = () => {
               <tbody className="divide-y divide-border/30">
                 {recentOrders.map((order: any) => (
                   <tr key={order.id} className="group hover:bg-white/[0.01] transition-colors">
-                    <td className="py-4 text-sm font-semibold text-white">#{order.id}</td>
+                    <td className="py-4 text-sm font-semibold text-foreground">#{order.id}</td>
                     <td className="py-4 text-sm text-muted-foreground font-medium">Customer #{order.customer_id}</td>
-                    <td className="py-4 text-sm font-bold text-emerald-400">${parseFloat(order.total_amount).toFixed(2)}</td>
+                    <td className="py-4 text-sm font-bold text-primary">₹{parseFloat(order.total_amount).toFixed(2)}</td>
                     <td className="py-4 text-sm text-muted-foreground font-medium">
                       {new Date(order.created_at).toLocaleDateString()} {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </td>
