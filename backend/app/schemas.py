@@ -1,5 +1,6 @@
+from datetime import datetime
 from decimal import Decimal
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
 
 # ==========================================
@@ -47,6 +48,37 @@ class CustomerUpdate(BaseModel):
 
 class CustomerResponse(CustomerBase):
     id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ==========================================
+# Order Schemas
+# ==========================================
+
+class OrderItemCreate(BaseModel):
+    product_id: int = Field(..., description="ID of the product being ordered")
+    quantity: int = Field(..., gt=0, description="Quantity ordered (must be greater than 0)")
+
+class OrderCreate(BaseModel):
+    customer_id: int = Field(..., description="ID of the customer placing the order")
+    items: List[OrderItemCreate] = Field(..., min_length=1, description="List of ordered items (must contain at least 1 item)")
+
+class OrderItemResponse(BaseModel):
+    id: int
+    order_id: int
+    product_id: int
+    quantity: int
+    unit_price: Decimal
+
+    model_config = ConfigDict(from_attributes=True)
+
+class OrderResponse(BaseModel):
+    id: int
+    customer_id: int
+    total_amount: Decimal
+    created_at: datetime
+    items: List[OrderItemResponse]
 
     model_config = ConfigDict(from_attributes=True)
 
