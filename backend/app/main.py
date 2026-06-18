@@ -4,12 +4,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from backend.app.config import settings
 from backend.app.database import get_db
+from backend.app.routers import products
 
 app = FastAPI(
     title=settings.APP_NAME,
     description="Production-grade backend for the Inventory & Order Management System",
     version="1.0.0",
 )
+
+app.include_router(products.router)
 
 # CORS middleware configuration to allow seamless integration with frontend
 app.add_middleware(
