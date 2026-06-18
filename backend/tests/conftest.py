@@ -5,7 +5,7 @@ import pytest_asyncio
 import httpx
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from backend.app.database import Base, get_db
-from backend.app.models import Product, Customer, Order, OrderItem
+from backend.app.models import Product, Customer, Order, OrderItem, User
 
 import os
 
@@ -86,4 +86,90 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[httpx.AsyncClient, 
         yield ac
         
     # Clear overrides after the test finishes
+    app.dependency_overrides.clear()
+
+@pytest_asyncio.fixture(autouse=True)
+async def clean_database(db_session: AsyncSession):
+    from backend.app.models import User, Customer, Product, Order, OrderItem
+    from sqlalchemy import delete
+    await db_session.execute(delete(OrderItem))
+    await db_session.execute(delete(Order))
+    await db_session.execute(delete(Customer))
+    await db_session.execute(delete(User))
+    await db_session.execute(delete(Product))
+    await db_session.flush()
+
+@pytest_asyncio.fixture
+async def db_admin(db_session: AsyncSession) -> User:
+    from backend.app.auth import get_password_hash
+    admin = User(
+        email="admin_test@example.com",
+        hashed_password=get_password_hash("testpassword"),
+        role="admin"
+    )
+    db_session.add(admin)
+    await db_session.flush()
+    return admin
+
+@pytest_asyncio.fixture
+async def db_customer(db_session: AsyncSession) -> Customer:
+    from backend.app.auth import get_password_hash
+    customer_user = User(
+        email="customer_test@example.com",
+        hashed_password=get_password_hash("testpassword"),
+        role="customer"
+    )
+    db_session.add(customer_user)
+    await db_session.flush()
+    
+    customer = Customer(
+        full_name="Test Customer",
+        email="customer_test@example.com",
+        phone_number="1234567890",
+        user_id=customer_user.id
+    )
+    db_session.add(customer)
+    await db_session.flush()
+    return customer
+
+@pytest_asyncio.fixture
+async def admin_client(db_session: AsyncSession, db_admin: User) -> AsyncGenerator[httpx.AsyncClient, None]:
+    async def _get_test_db() -> AsyncGenerator[AsyncSession, None]:
+        yield db_session
+
+    from backend.app.main import app
+    app.dependency_overrides[get_db] = _get_test_db
+    
+    from backend.app.auth import create_access_token
+    token = create_access_token(data={"sub": db_admin.email})
+    
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://test",
+        headers={"Authorization": f"Bearer {token}"}
+    ) as ac:
+        yield ac
+        
+    app.dependency_overrides.clear()
+
+@pytest_asyncio.fixture
+async def customer_client(db_session: AsyncSession, db_customer: Customer) -> AsyncGenerator[httpx.AsyncClient, None]:
+    async def _get_test_db() -> AsyncGenerator[AsyncSession, None]:
+        yield db_session
+
+    from backend.app.main import app
+    app.dependency_overrides[get_db] = _get_test_db
+    
+    from backend.app.auth import create_access_token
+    from backend.app.models import User
+    res = await db_session.get(User, db_customer.user_id)
+    token = create_access_token(data={"sub": res.email})
+    
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://test",
+        headers={"Authorization": f"Bearer {token}"}
+    ) as ac:
+        yield ac
+        
     app.dependency_overrides.clear()
