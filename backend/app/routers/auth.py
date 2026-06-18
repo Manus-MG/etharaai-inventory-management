@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from backend.app.database import get_db
 from backend.app.models import User, Customer
 from backend.app.schemas import UserRegister, Token
-from backend.app.auth import get_password_hash, verify_password, create_access_token
+from backend.app.auth import get_password_hash, verify_password, create_access_token, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -84,5 +84,20 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
             headers={"WWW-Authenticate": "Bearer"},
         )
         
-    access_token = create_access_token(data={"sub": user.email})
+    access_token = create_access_token(data={"sub": user.email, "role": user.role})
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.get("/me")
+async def get_me(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    response_data = {
+        "id": current_user.id,
+        "email": current_user.email,
+        "role": current_user.role
+    }
+    if current_user.role == "customer":
+        result = await db.execute(select(Customer).where(Customer.user_id == current_user.id))
+        customer = result.scalar_one_or_none()
+        if customer:
+            response_data["customer_id"] = customer.id
+    return response_data
+
