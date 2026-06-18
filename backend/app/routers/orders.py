@@ -103,3 +103,34 @@ async def create_order(order_in: OrderCreate, db: AsyncSession = Depends(get_db)
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An unexpected error occurred while placing the order: {str(e)}"
         )
+
+@router.get("", response_model=List[OrderResponse])
+async def list_orders(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
+    """
+    Retrieves a list of all orders.
+    """
+    result = await db.execute(
+        select(Order)
+        .options(selectinload(Order.items))
+        .offset(skip)
+        .limit(limit)
+    )
+    return result.scalars().all()
+
+@router.get("/{order_id}", response_model=OrderResponse)
+async def get_order(order_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Retrieves details of a specific order by ID.
+    """
+    result = await db.execute(
+        select(Order)
+        .where(Order.id == order_id)
+        .options(selectinload(Order.items))
+    )
+    order = result.scalar_one_or_none()
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Order with ID {order_id} not found."
+        )
+    return order
