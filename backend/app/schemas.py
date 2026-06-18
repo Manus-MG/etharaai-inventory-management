@@ -82,3 +82,19 @@ class OrderResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+# ==========================================
+# Auth/Security Schemas
+# ==========================================
+
+class UserRegister(BaseModel):
+    email: EmailStr
+    password: str = Field(..., min_length=6, description="Password must be at least 6 characters")
+    full_name: str = Field(..., min_length=1, max_length=255)
+    phone_number: str = Field(..., min_length=1, max_length=100)
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+

@@ -1,17 +1,47 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from backend.app.config import settings
 from backend.app.database import get_db
-from backend.app.routers import products, customers, orders
+from backend.app.routers import products, customers, orders, auth
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup seeding: create a default admin user if none exists
+    from backend.app.database import AsyncSessionLocal
+    from backend.app.models import User
+    from backend.app.auth import get_password_hash
+    from sqlalchemy.future import select
+    
+    async with AsyncSessionLocal() as db:
+        try:
+            result = await db.execute(select(User).where(User.role == "admin"))
+            admin_user = result.scalar_one_or_none()
+            if not admin_user:
+                hashed_password = get_password_hash("adminpassword")
+                default_admin = User(
+                    email="admin@inventory.com",
+                    hashed_password=hashed_password,
+                    role="admin"
+                )
+                db.add(default_admin)
+                await db.commit()
+                print("Seeded default admin user: admin@inventory.com")
+        except Exception as e:
+            await db.rollback()
+            print(f"Error during admin seeding: {e}")
+    yield
 
 app = FastAPI(
     title=settings.APP_NAME,
     description="Production-grade backend for the Inventory & Order Management System",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
+app.include_router(auth.router)
 app.include_router(products.router)
 app.include_router(customers.router)
 app.include_router(orders.router)
